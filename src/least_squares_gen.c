@@ -62,8 +62,8 @@ int main(int argc, char *argv[]) {
 	MPI_Gather (y_parcial, n_por_proc, MPI_DOUBLE, y_total, n_por_proc, MPI_DOUBLE, raiz, MPI_COMM_WORLD);
 	// O processo raiz calcula o resto do y 
     if (meu_ranque == raiz && n%num_procs != 0) {
-        for (i = n%num_procs; i > 0; i++) {
-            x = n - 1;
+        for (i = n%num_procs; i > 0; i--) {
+            x = n - i;
             y_total[x] = f(x, a, b);
         }
     }
