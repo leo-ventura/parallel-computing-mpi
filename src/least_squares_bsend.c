@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
 
     double *x, *y, *x_partial, *y_partial, time_start, time_end;
-    double mySUMx, mySUMy, mySUMxy, mySUMxx, SUMx, SUMy, SUMxy,
+    double mySUMx, mySUMy, mySUMxy, mySUMxx, SUMx, SUMy, SUMxy, mySUMres,
             SUMxx, SUMres, res, slope, y_intercept, y_estimate;
     int i, j, n, myid, numprocs, naverage, nremain, mypoints, tam_buffer;
     int *sendcounts, *displs;
@@ -102,21 +102,27 @@ int main(int argc, char **argv) {
     MPI_Reduce(&mySUMxx, &SUMxx, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&mySUMxy, &SUMxy, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
 
+    if (myid == root) {
+        slope = ( SUMx*SUMy - n*SUMxy ) / ( SUMx*SUMx - n*SUMxx );
+        y_intercept = ( SUMy - slope*SUMx ) / n;
+    }
+
+    MPI_Bcast(&slope, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+    MPI_Bcast(&y_intercept, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+
+    mySUMres = 0;
+    for (i = 0; i < mypoints; i++) {
+        y_estimate = slope*x_partial[i] + y_intercept;
+        res = y_partial[i] - y_estimate;
+        mySUMres += res*res;
+    }
+
+    MPI_Reduce(&mySUMres, &SUMres, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
 
     /* ----------------------------------------------------------
     * Step 5: Process 0 does the final steps
     * ---------------------------------------------------------- */
     if (myid == 0) {
-        slope = ( SUMx*SUMy - n*SUMxy ) / ( SUMx*SUMx - n*SUMxx );
-        y_intercept = ( SUMy - slope*SUMx ) / n;
-
-        SUMres = 0;
-        for (i=0; i<n; i++) {
-            y_estimate = slope*x[i] + y_intercept;
-            res = y[i] - y_estimate;
-            SUMres = SUMres + res*res;
-        }
-
         time_end = MPI_Wtime();
         printf ("Equation: y = %6.2lfx + %6.2lf\t", slope, y_intercept);
         printf("Residual sum = %6.2lf\n", SUMres);
