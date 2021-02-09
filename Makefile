@@ -12,11 +12,12 @@ PROGFILES=$(addprefix $(BINDIR),$(_PROGS))
 
 all: $(PROGFILES)
 
-$(BINDIR)%: $(SRCDIR)%.c $(BINDIR)
+$(BINDIR)%: $(SRCDIR)%.c
+	@mkdir -p $(BINDIR)
 	$(CC) $(INC) $< $(CFLAGS) -o $@ $(LIBS)
 
-$(BINDIR):
-	mkdir -p $(BINDIR)
+debug:
+	$(CC) $(INC) src/$(DEBUG_PROG).c $(CFLAGS) -o bin/$(DEBUG_PROG) $(LIBS) -g
 
 clean:
 	rm -rf $(BINDIR)
