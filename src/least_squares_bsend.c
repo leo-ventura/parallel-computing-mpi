@@ -102,7 +102,6 @@ int main(int argc, char **argv) {
     MPI_Reduce(&mySUMxx, &SUMxx, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&mySUMxy, &SUMxy, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
 
-    time_end = MPI_Wtime();
 
     /* ----------------------------------------------------------
     * Step 5: Process 0 does the final steps
@@ -110,27 +109,18 @@ int main(int argc, char **argv) {
     if (myid == 0) {
         slope = ( SUMx*SUMy - n*SUMxy ) / ( SUMx*SUMx - n*SUMxx );
         y_intercept = ( SUMy - slope*SUMx ) / n;
-        /* this call is used to achieve a consistent output format */
-        /*new_sleep (3);*/
-        // printf ("\n");
-        // printf ("The linear equation that best fits the given data:\n");
-        printf ("       y = %6.2lfx + %6.2lf\n", slope, y_intercept);
-        // printf ("--------------------------------------------------\n");
-        // printf ("   Original (x,y)     Estimated y     Residual\n");
-        // printf ("--------------------------------------------------\n");
 
         SUMres = 0;
         for (i=0; i<n; i++) {
             y_estimate = slope*x[i] + y_intercept;
             res = y[i] - y_estimate;
             SUMres = SUMres + res*res;
-            // printf ("   (%6.2lf %6.2lf)      %6.2lf       %6.2lf\n",
-            //   x[i], y[i], y_estimate, res);
         }
-        // printf("--------------------------------------------------\n");
+
+        time_end = MPI_Wtime();
+        printf ("Equation: y = %6.2lfx + %6.2lf\t", slope, y_intercept);
         printf("Residual sum = %6.2lf\n", SUMres);
-        printf("Bsend version\n");
-        printf("Time elapsed with %d proccesses: %1.3f\n", numprocs, time_end-time_start);
+        printf("Bsend version. %d proccesses. n = %d. Time elapsed proccesses: %1.3f\n", numprocs, n, time_end-time_start);
     }
 
     free(buffer);
