@@ -57,8 +57,8 @@ int main(int argc, char **argv) {
         }
     }
     
-    x_partial = (double *) malloc ((naverage+nremain)*sizeof(double));
-    y_partial = (double *) malloc ((naverage+nremain)*sizeof(double));
+    x_partial = (double *) malloc ((mypoints)*sizeof(double));
+    y_partial = (double *) malloc ((mypoints)*sizeof(double));
 
     MPI_Scatter(sendcounts, 1, MPI_INT, &mypoints, 1, MPI_INT, root, MPI_COMM_WORLD);
     
