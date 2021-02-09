@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv) {
 
-    double *x, *y, *x_partial, *y_partial;
+    double *x, *y, *x_partial, *y_partial, time_start, time_end;
     double mySUMx, mySUMy, mySUMxy, mySUMxx, SUMx, SUMy, SUMxy,
             SUMxx, SUMres, res, slope, y_intercept, y_estimate;
     int i,j,n,myid,numprocs,naverage,nremain,mypoints;
@@ -26,9 +26,9 @@ int main(int argc, char **argv) {
     * Step 1: Process 0 reads data and sends the value of n
     * ---------------------------------------------------------- */
     if (myid == 0) {
-        printf ("Number of processes used: %d\n", numprocs);
-        printf ("-------------------------------------\n");
-        printf ("The x coordinates on worker processes:\n");
+        // printf ("Number of processes used: %d\n", numprocs);
+        // printf ("-------------------------------------\n");
+        // printf ("The x coordinates on worker processes:\n");
         /* this call is used to achieve a consistent output format */
         /* new_sleep (3);*/
         fscanf (infile, "%d", &n);
@@ -36,6 +36,8 @@ int main(int argc, char **argv) {
         y = (double *) malloc (n*sizeof(double));
         for (i=0; i<n; i++)
             fscanf (infile, "%lf %lf", &x[i], &y[i]);
+
+        time_start = MPI_Wtime();
     }
 
     MPI_Bcast(&n, 1, MPI_INT, root, MPI_COMM_WORLD);
@@ -83,6 +85,8 @@ int main(int argc, char **argv) {
     MPI_Reduce(&mySUMy, &SUMy, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&mySUMxx, &SUMxx, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&mySUMxy, &SUMxy, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
+    
+    time_end = MPI_Wtime();
 
     /* ----------------------------------------------------------
     * Step 5: Process 0 does the final steps
@@ -92,12 +96,12 @@ int main(int argc, char **argv) {
         y_intercept = ( SUMy - slope*SUMx ) / n;
         /* this call is used to achieve a consistent output format */
         /*new_sleep (3);*/
-        printf ("\n");
-        printf ("The linear equation that best fits the given data:\n");
+        // printf ("\n");
+        // printf ("The linear equation that best fits the given data:\n");
         printf ("       y = %6.2lfx + %6.2lf\n", slope, y_intercept);
-        printf ("--------------------------------------------------\n");
-        printf ("   Original (x,y)     Estimated y     Residual\n");
-        printf ("--------------------------------------------------\n");
+        // printf ("--------------------------------------------------\n");
+        // printf ("   Original (x,y)     Estimated y     Residual\n");
+        // printf ("--------------------------------------------------\n");
 
         SUMres = 0;
         for (i=0; i<n; i++) {
@@ -107,8 +111,10 @@ int main(int argc, char **argv) {
             // printf ("   (%6.2lf %6.2lf)      %6.2lf       %6.2lf\n",
             //   x[i], y[i], y_estimate, res);
         }
-        printf("--------------------------------------------------\n");
+        // printf("--------------------------------------------------\n");
         printf("Residual sum = %6.2lf\n", SUMres);
+        printf("Scatter version\n");
+        printf("Time elapsed with %d proccesses: %1.3f\n", numprocs, time_end-time_start);
     }
 
     /* ----------------------------------------------------------	*/

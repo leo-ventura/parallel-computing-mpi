@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include "mpi.h"
-#define MAX_ABS_EPSILON 5.0
-#define MAX_ABS_COEFF 1000.0
+#define MAX_ABS_EPSILON 2.0
+#define MAX_ABS_COEFF 100.0
 
 double random_in_range(double max_abs) {
     float scale = rand() / (float) RAND_MAX; /* [0, 1.0] */

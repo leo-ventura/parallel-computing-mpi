@@ -45,7 +45,7 @@
 
 int main(int argc, char **argv) {
 
-  double *x, *y;
+  double *x, *y, time_start, time_end;
   double mySUMx, mySUMy, mySUMxy, mySUMxx, SUMx, SUMy, SUMxy,
          SUMxx, SUMres, res, slope, y_intercept, y_estimate;
   int i,j,n,myid,numprocs,naverage,nremain,mypoints,ishift;
@@ -64,9 +64,9 @@ int main(int argc, char **argv) {
    * Step 1: Process 0 reads data and sends the value of n
    * ---------------------------------------------------------- */
   if (myid == 0) {
-    printf ("Number of processes used: %d\n", numprocs);
-    printf ("-------------------------------------\n");
-    printf ("The x coordinates on worker processes:\n");
+    // printf ("Number of processes used: %d\n", numprocs);
+    // printf ("-------------------------------------\n");
+    // printf ("The x coordinates on worker processes:\n");
     /* this call is used to achieve a consistent output format */
     /* new_sleep (3);*/
     fscanf (infile, "%d", &n);
@@ -74,6 +74,7 @@ int main(int argc, char **argv) {
     y = (double *) malloc (n*sizeof(double));
     for (i=0; i<n; i++)
       fscanf (infile, "%lf %lf", &x[i], &y[i]);
+    time_start = MPI_Wtime();
     for (i=1; i<numprocs; i++)
       MPI_Send (&n, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
   }
@@ -108,9 +109,9 @@ int main(int argc, char **argv) {
 	      &istatus);
     MPI_Recv (&y[ishift], mypoints, MPI_DOUBLE, 0, 4, MPI_COMM_WORLD,
 	      &istatus);
-    printf ("id %d: ", myid);
-    for (i=0; i<n; i++) printf("%4.2lf ", x[i]);
-    printf ("\n");
+    // printf ("id %d: ", myid);
+    // for (i=0; i<n; i++) printf("%4.2lf ", x[i]);
+    // printf ("\n");
     /* ---------------------------------------------------------- */
   }
 
@@ -153,6 +154,8 @@ int main(int argc, char **argv) {
     }
   }
 
+  time_end = MPI_Wtime();
+
   /* ----------------------------------------------------------
    * Step 5: Process 0 does the final steps
    * ---------------------------------------------------------- */
@@ -161,23 +164,25 @@ int main(int argc, char **argv) {
     y_intercept = ( SUMy - slope*SUMx ) / n;
     /* this call is used to achieve a consistent output format */
     /*new_sleep (3);*/
-    printf ("\n");
-    printf ("The linear equation that best fits the given data:\n");
+    // printf ("\n");
+    // printf ("The linear equation that best fits the given data:\n");
     printf ("       y = %6.2lfx + %6.2lf\n", slope, y_intercept);
-    printf ("--------------------------------------------------\n");
-    printf ("   Original (x,y)     Estimated y     Residual\n");
-    printf ("--------------------------------------------------\n");
+    // printf ("--------------------------------------------------\n");
+    // printf ("   Original (x,y)     Estimated y     Residual\n");
+    // printf ("--------------------------------------------------\n");
 
     SUMres = 0;
     for (i=0; i<n; i++) {
       y_estimate = slope*x[i] + y_intercept;
       res = y[i] - y_estimate;
       SUMres = SUMres + res*res;
-      printf ("   (%6.2lf %6.2lf)      %6.2lf       %6.2lf\n",
-	      x[i], y[i], y_estimate, res);
+      // printf ("   (%6.2lf %6.2lf)      %6.2lf       %6.2lf\n",
+	    //   x[i], y[i], y_estimate, res);
     }
-    printf("--------------------------------------------------\n");
+    // printf("--------------------------------------------------\n");
     printf("Residual sum = %6.2lf\n", SUMres);
+    printf("Original version\n");
+    printf("Time elapsed with %d proccesses: %1.3f\n", numprocs, time_end-time_start);
   }
 
   /* ----------------------------------------------------------	*/
