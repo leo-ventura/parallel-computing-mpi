@@ -57,11 +57,11 @@ int main(int argc, char **argv) {
         }
     }
     
+    MPI_Scatter(sendcounts, 1, MPI_INT, &mypoints, 1, MPI_INT, root, MPI_COMM_WORLD);
+
     x_partial = (double *) malloc ((mypoints)*sizeof(double));
     y_partial = (double *) malloc ((mypoints)*sizeof(double));
 
-    MPI_Scatter(sendcounts, 1, MPI_INT, &mypoints, 1, MPI_INT, root, MPI_COMM_WORLD);
-    
     MPI_Scatterv(x, sendcounts, displs, MPI_DOUBLE, x_partial, mypoints, MPI_DOUBLE, root, MPI_COMM_WORLD);
     MPI_Scatterv(y, sendcounts, displs, MPI_DOUBLE, y_partial, mypoints, MPI_DOUBLE, root, MPI_COMM_WORLD);
 

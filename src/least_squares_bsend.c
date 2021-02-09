@@ -58,22 +58,22 @@ int main(int argc, char **argv) {
         }
     }
     
+    MPI_Scatter(sendcounts, 1, MPI_INT, &mypoints, 1, MPI_INT, root, MPI_COMM_WORLD);
+
     x_partial = (double *) malloc ((mypoints)*sizeof(double));
     y_partial = (double *) malloc ((mypoints)*sizeof(double));
-
-    MPI_Scatter(sendcounts, 1, MPI_INT, &mypoints, 1, MPI_INT, root, MPI_COMM_WORLD);
     
-    // MPI_Pack_size(naverage+nremain, MPI_INT, MPI_COMM_WORLD, &tam_buffer);
-    // tam_buffer +=  MPI_BSEND_OVERHEAD;
-    // tam_buffer *= numprocs;
-    // tam_buffer *= 2;
-    // buffer =(void*) malloc(tam_buffer);
-    // MPI_Buffer_attach(buffer, tam_buffer);
+    MPI_Pack_size(mypoints, MPI_DOUBLE, MPI_COMM_WORLD, &tam_buffer);
+    tam_buffer +=  MPI_BSEND_OVERHEAD;
+    tam_buffer *= numprocs;
+    tam_buffer *= 2;
+    buffer =(void*) malloc(tam_buffer);
+    MPI_Buffer_attach(buffer, tam_buffer);
     
     if (myid == root) {
         for (i = 0; i < numprocs; i++) {
-            MPI_Send(&x[displs[i]], sendcounts[i], MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
-            MPI_Send(&y[displs[i]], sendcounts[i], MPI_DOUBLE, i, 2, MPI_COMM_WORLD);
+            MPI_Bsend(&x[displs[i]], sendcounts[i], MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+            MPI_Bsend(&y[displs[i]], sendcounts[i], MPI_DOUBLE, i, 2, MPI_COMM_WORLD);
         }
     }
     
@@ -126,6 +126,8 @@ int main(int argc, char **argv) {
         printf("--------------------------------------------------\n");
         printf("Residual sum = %6.2lf\n", SUMres);
     }
+
+    free(buffer);
 
     /* ----------------------------------------------------------	*/
     MPI_Finalize();
