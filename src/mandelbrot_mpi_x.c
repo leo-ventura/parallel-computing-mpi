@@ -13,8 +13,7 @@
 #define Y_RESN 1000 /* y resolution */
 #define MAX_ITER (600)
 
-typedef struct complextype
-{
+typedef struct complextype {
     double real, imag;
 } Compl;
 
@@ -301,12 +300,6 @@ int main(int argc, char *argv[])
     if (rank == 0)
         ks = (int *)malloc((X_RESN * Y_RESN) * sizeof(int));
 
-    double *ds_loc;
-    double *ds;
-    ds_loc = (double *)malloc(my_count * sizeof(double));
-    if (rank == 0)
-        ds = (double *)malloc((X_RESN * Y_RESN) * sizeof(double));
-
     /* Calculate and draw points */
     for (int it = my_start; it < my_start + my_count; it++)
     {
@@ -324,7 +317,6 @@ int main(int argc, char *argv[])
         c.imag = u;
 
         int k = 0;
-        double d = 0.0;
 
         double lengthsq, temp;
         do
@@ -333,20 +325,16 @@ int main(int argc, char *argv[])
             z.imag = 2.0 * t.real * t.imag + c.imag;
             z.real = t.real * t.real - t.imag * t.imag + c.real;
             lengthsq = z.real * z.real + z.imag * z.imag;
-            d += pow(pow(z.imag - t.imag, 2.0) + pow(z.real - t.real, 2.0), 0.5);
             k++;
         } while (lengthsq < 4.0 && k < MAX_ITER);
 
         ks_loc[it - my_start] = k;
-        ds_loc[it - my_start] = d;
     }
 
     // concatenating all ks_loc arrays from each process into the ks array at process 0
     MPI_Gatherv(ks_loc, counts[rank], MPI_INT, ks, counts, starts, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(ds_loc, counts[rank], MPI_DOUBLE, ds, counts, starts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     free(ks_loc);
-    free(ds_loc);
     free(counts);
     free(starts);
 
@@ -360,14 +348,13 @@ int main(int argc, char *argv[])
             j = it % Y_RESN;
 
             k = ks[it];
-            d = ds[it];
             // if (k == MAX_ITER)
             {
                 rgb c;
                 c.r = 1.0;
                 c.g = 0.8;
                 c.b = 0;
-                XSetForeground(display, gc, k == MAX_ITER ? _RGB(colormap2(sin(d))) : _RGB(colormap1(k/(double)MAX_ITER)));
+                XSetForeground(display, gc, k == MAX_ITER ? 0 : _RGB(colormap1(k/(double)MAX_ITER)));
                 // XSetForeground(display, gc, _RGB(colormap1(d)));
                 // XSetForeground(display, gc, _RGB(c));
                 // XSetForeground(display, gc, 0xFFD000);
@@ -378,7 +365,6 @@ int main(int argc, char *argv[])
         XFlush(display);
 
         free(ks);
-        free(ds);
 
         sleep(30);
     }
