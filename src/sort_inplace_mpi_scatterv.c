@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     int N = atoi(argv[1]);
 
     int rank, n_procs, root = 0;
-    int unsorted_array[N];
+    int *unsorted_array = malloc(sizeof(int) * N);
     int *sorted_array;
     int *local_array;
 
@@ -90,9 +90,9 @@ int main(int argc, char *argv[]) {
     if (rank == root) {
         for(int i = 0; i < N; i++) {
             unsorted_array[i] = rand() % RANGE_RAND;
-            printf(" %d", unsorted_array[i]);
+            // printf(" %d", unsorted_array[i]);
         }
-        puts("");
+        // puts("");
     }
     local_array = malloc(sizeof(int)*partition_size);
 
@@ -121,12 +121,12 @@ int main(int argc, char *argv[]) {
     MPI_Scatterv(unsorted_array, sendcounts, displacement, MPI_INT, local_array,
         self_partition_size, MPI_INT, root, MPI_COMM_WORLD);
 
-    printf("Processo =  %d, recebeu", rank);
-    print_array(local_array, self_partition_size);
+    // printf("Processo =  %d, recebeu", rank);
+    // print_array(local_array, self_partition_size);
 
     merge_sort(local_array, 0, self_partition_size - 1);
-    printf("Locally sorted array: ");
-    print_array(local_array, self_partition_size);
+    // printf("Locally sorted array: ");
+    // print_array(local_array, self_partition_size);
 
     sorted_array = malloc(sizeof(int) * N);
     MPI_Gatherv(local_array, self_partition_size, MPI_INT, sorted_array,
@@ -141,8 +141,8 @@ int main(int argc, char *argv[]) {
         }
 
         double end = MPI_Wtime();
-        puts("Sorted array:");
-        print_array(sorted_array, N);
+        // puts("Sorted array:");
+        // print_array(sorted_array, N);
         printf("Demorou %.4f segundos para ordenar %d valores\n", end - start, N);
     }
 
