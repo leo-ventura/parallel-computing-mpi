@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include "mpi.h"
-#define N 100
 #define RANGE_RAND 1000
 
 void print_array(int* arr, int size) {
@@ -63,6 +62,14 @@ int* merge_sort(int *local_array, int size) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        puts("Passe o valor de N como argumento");
+        printf("%s N\n", argv[0]);
+        return 1;
+    }
+
+    int N = atoi(argv[1]);
+
     int rank, n_procs, root = 0;
     int unsorted_array[N];
     int partially_sorted_array[N];
