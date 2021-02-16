@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
         }
         // puts("");
     }
-    local_array = malloc(sizeof(int)*partition_size);
 
     int remaining_values = N % n_procs;
     int *sendcounts = calloc(n_procs, sizeof(int));
@@ -103,8 +102,9 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < n_procs; ++i) {
         sendcounts[i] = partition_size;
         if (remaining_values > 0) {
-            sendcounts[i] += partition_size;
-            remaining_values -= partition_size;
+            int addition = remaining_values > partition_size ? partition_size : remaining_values;
+            sendcounts[i] += addition;
+            remaining_values -= addition;
         }
 
         displacement[i] = sum;
@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
 
     int self_partition_size = sendcounts[rank];
     /* O vetor é distribuído em partes iguais entre os processos, incluindo o processo raiz */
+    local_array = malloc(sizeof(int)*self_partition_size);
     MPI_Scatterv(unsorted_array, sendcounts, displacement, MPI_INT, local_array,
         self_partition_size, MPI_INT, root, MPI_COMM_WORLD);
 
@@ -133,7 +134,6 @@ int main(int argc, char *argv[]) {
         sendcounts, displacement, MPI_INT, root, MPI_COMM_WORLD);
 
     if (rank == root) {
-        int limit_tree = log2(n_procs);
         for (int proc = 1; proc < n_procs; proc++) {
             int middle = displacement[proc] - 1;
             int end = middle + sendcounts[proc];
