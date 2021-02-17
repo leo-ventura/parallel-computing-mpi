@@ -10,6 +10,7 @@
 
 #define X_RESN 800 /* x resolution */
 #define Y_RESN 800 /* y resolution */
+#define MAX_ITER (600)
 
 typedef struct complextype
 {
@@ -135,9 +136,9 @@ void main()
 				lengthsq = z.real * z.real + z.imag * z.imag;
 				k++;
 
-			} while (lengthsq < 4.0 && k < 100);
+			} while (lengthsq < 4.0 && k < MAX_ITER);
 
-			if (k == 100)
+			if (k == MAX_ITER)
 				XDrawPoint(display, win, gc, j, i);
 		}
 

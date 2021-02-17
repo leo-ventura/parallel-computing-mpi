@@ -7,6 +7,7 @@
 
 #define X_RESN 800 /* x resolution */
 #define Y_RESN 800 /* y resolution */
+#define MAX_ITER (600)
 
 typedef struct complextype {
 	float real, imag;
@@ -39,7 +40,7 @@ void main()
 				lengthsq = z.real * z.real + z.imag * z.imag;
 				k++;
 
-			} while (lengthsq < 4.0 && k < 100);
+			} while (lengthsq < 4.0 && k < MAX_ITER);
 		}
 
 	/* Program Finished */
