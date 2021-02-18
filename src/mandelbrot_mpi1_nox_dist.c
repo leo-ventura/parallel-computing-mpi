@@ -8,7 +8,7 @@
 
 #define X_RESN 1000 /* x resolution */
 #define Y_RESN 1000 /* y resolution */
-#define MAX_ITER (600)
+#define MAX_ITER (2000)
 
 typedef struct complextype {
     double real, imag;
@@ -21,6 +21,10 @@ int main(int argc, char *argv[])
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    double start, finish;
+    if (rank == 0)
+        start = MPI_Wtime();
 
     /* Mandlebrot variables */
 
@@ -38,13 +42,13 @@ int main(int argc, char *argv[])
     int my_count = counts[rank];
 
     int *ks_loc;
-    int *ks;
+    int *ks = NULL;
     ks_loc = (int *)malloc(my_count * sizeof(int));
     if (rank == 0)
         ks = (int *)malloc((X_RESN * Y_RESN) * sizeof(int));
 
     double *ds_loc;
-    double *ds;
+    double *ds = NULL;
     ds_loc = (double *)malloc(my_count * sizeof(double));
     if (rank == 0)
         ds = (double *)malloc((X_RESN * Y_RESN) * sizeof(double));
@@ -90,10 +94,20 @@ int main(int argc, char *argv[])
     free(ks_loc);
     free(ds_loc);
     free(counts);
-    free(starts);
+    if (rank != 0)
+        free(starts);
 
-    free(ks);
-    free(ds);
+    if (rank == 0)
+    {
+        free(starts);
+
+        free(ks);
+        free(ds);
+    
+        finish = MPI_Wtime();
+        double elapsed = finish - start;
+        printf("%f\n", elapsed);
+    }
 
     MPI_Finalize();
 

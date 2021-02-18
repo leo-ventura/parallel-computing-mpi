@@ -279,6 +279,10 @@ int main(int argc, char *argv[])
         XSync(display, 0);
     }
 
+    double start, finish;
+    if (rank == 0)
+        start = MPI_Wtime();
+
     /* Mandlebrot variables */
 
     int *counts = (int *)malloc(num_procs * sizeof(int));
@@ -385,6 +389,10 @@ int main(int argc, char *argv[])
 
         free(ks);
         free(ds);
+
+        finish = MPI_Wtime();
+        double elapsed = finish - start;
+        printf("%f\n", elapsed);
 
         sleep(30);
     }

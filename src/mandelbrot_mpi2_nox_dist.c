@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
+    double start, finish;
+    if (rank == 0)
+        start = MPI_Wtime();
+
     /* Mandlebrot variables */
 
     int *counts = (int *)malloc(num_procs * sizeof(int));
@@ -41,13 +45,13 @@ int main(int argc, char *argv[])
     int my_count = counts[rank];
 
     int *ks_loc;
-    int *ks;
+    int *ks = NULL;
     ks_loc = (int *)malloc(my_count * sizeof(int));
     if (rank == 0)
         ks = (int *)malloc((X_RESN * Y_RESN) * sizeof(int));
 
     double *ds_loc;
-    double *ds;
+    double *ds = NULL;
     ds_loc = (double *)malloc(my_count * sizeof(double));
     if (rank == 0)
         ds = (double *)malloc((X_RESN * Y_RESN) * sizeof(double));
@@ -99,27 +103,14 @@ int main(int argc, char *argv[])
 
     if (rank == 0)
     {
-        int i, j, k;
-        double d;
-        for (int it_pixel = 0; it_pixel < (X_RESN * Y_RESN); it_pixel++)
-        {
-            int src_rank = it_pixel % num_procs;
-            int src_idx = it_pixel / num_procs;
-            int idx = starts[src_rank] + src_idx;
-            int i = it_pixel / Y_RESN;
-            int j = it_pixel % Y_RESN;
-
-            k = ks[idx];
-            d = ds[idx];
-            // if (k == MAX_ITER)
-            {
-            }
-        }
-
         free(starts);
 
         free(ks);
         free(ds);
+    
+        finish = MPI_Wtime();
+        double elapsed = finish - start;
+        printf("%f\n", elapsed);
     }
 
     MPI_Finalize();
